@@ -3,8 +3,7 @@
 # ║     OpenClaw Auto-Installer v1.0 — Rooted Android Edition       ║
 # ║     Run this ONCE inside Termux — everything installs auto      ║
 # ╚══════════════════════════════════════════════════════════════════╝
-# Usage (inside Termux): curl -sL https://YOUR_HOST/install.sh | bash
-# OR: bash install.sh
+# Usage (inside Termux): https://raw.githubusercontent.com/workingman7/openclaw--installer/refs/heads/main/openclaw_installer.sh
 
 set -e
 
