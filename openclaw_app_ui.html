@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OpenClaw Setup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#08090c;--s1:#0f1117;--s2:#161922;--s3:#1d2230;
+  --border:#252b3b;--border2:#303748;
+  --green:#22d3a0;--green2:#0e9e72;
+  --blue:#60a5fa;--amber:#fbbf24;--red:#f87171;--purple:#a78bfa;
+  --text:#dde3f0;--muted:#8899b0;
+  --mono:'IBM Plex Mono',monospace;--body:'Outfit',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body)}
+body{overflow-x:hidden}
+
+/* ── NAV ── */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,9,12,0.95);backdrop-filter:blur(10px);z-index:100}
+.nav-logo{display:flex;align-items:center;gap:8px}
+.nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.nav-logo span{font-weight:800;font-size:17px;letter-spacing:-0.5px}
+.nav-logo span b{color:var(--green)}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:600}
+.status-pill.running{border-color:rgba(34,211,160,0.4);color:var(--green)}
+.status-pill.stopped{border-color:var(--border);color:var(--muted)}
+.status-pill.error{border-color:rgba(248,113,113,0.4);color:var(--red)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:calc(100vh - 57px);padding:1.5rem 1.2rem 6rem}
+.screen.active{display:block}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,9,12,0.97);border-top:1px solid var(--border);display:flex;backdrop-filter:blur(10px);z-index:100}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:0.3px;transition:color 0.15s}
+.bn-item.active{color:var(--green)}
+.bn-icon{font-size:20px;line-height:1}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.card-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.8rem}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:2rem 0 1.5rem}
+.hero h1{font-size:2rem;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:0.5rem}
+.hero h1 span{color:var(--green)}
+.hero p{color:var(--muted);font-size:13px;max-width:280px;margin:0 auto}
+
+/* ── STEP TRACKER ── */
+.step-track{display:flex;flex-direction:column;gap:4px;margin:1rem 0}
+.st-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;transition:all 0.3s}
+.st-item.done{background:rgba(34,211,160,0.05);border-color:rgba(34,211,160,0.2)}
+.st-item.active{background:rgba(96,165,250,0.07);border-color:rgba(96,165,250,0.3);animation:activeStep 1.5s ease infinite}
+@keyframes activeStep{0%,100%{border-color:rgba(96,165,250,0.3)}50%{border-color:rgba(96,165,250,0.6)}}
+.st-item.error{background:rgba(248,113,113,0.07);border-color:rgba(248,113,113,0.3)}
+.st-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.st-icon.pending{background:var(--s3);color:var(--muted)}
+.st-icon.done-icon{background:rgba(34,211,160,0.15);color:var(--green)}
+.st-icon.active-icon{background:rgba(96,165,250,0.15);color:var(--blue)}
+.st-icon.error-icon{background:rgba(248,113,113,0.15);color:var(--red)}
+.st-text{flex:1}
+.st-text h4{font-size:13px;font-weight:600;margin-bottom:1px}
+.st-text p{font-size:11px;color:var(--muted)}
+
+/* ── FORM ── */
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.form-input{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.form-input:focus{border-color:var(--green);background:var(--s2)}
+.form-input::placeholder{color:var(--muted);opacity:0.6}
+.form-hint{font-size:11px;color:var(--muted);margin-top:5px}
+.form-hint a{color:var(--blue);text-decoration:none}
+.form-select{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-size:13px;outline:none;-webkit-appearance:none;appearance:none}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all 0.15s;letter-spacing:-0.3px}
+.btn-primary{background:var(--green);color:#08090c}
+.btn-primary:active{transform:scale(0.98);background:var(--green2)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+.btn-secondary{background:var(--s2);color:var(--text);border:1px solid var(--border2)}
+.btn-secondary:active{transform:scale(0.98)}
+.btn-danger{background:rgba(248,113,113,0.15);color:var(--red);border:1px solid rgba(248,113,113,0.3)}
+.btn-sm{padding:8px 16px;font-size:13px;width:auto;border-radius:8px}
+
+/* ── TERMINAL ── */
+.terminal{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.term-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s3);border-bottom:1px solid var(--border)}
+.term-dots{display:flex;gap:5px}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-body{padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.8;height:220px;overflow-y:auto;color:#8899b0}
+.term-body .g{color:var(--green)}
+.term-body .r{color:var(--red)}
+.term-body .y{color:var(--amber)}
+.term-body .b{color:var(--blue)}
+.term-body .w{color:var(--text)}
+.term-cursor{display:inline-block;width:7px;height:13px;background:var(--green);animation:blink 1s ease infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── METRIC CARDS ── */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.metric{background:var(--s2);border-radius:12px;padding:14px;text-align:center}
+.metric-val{font-size:22px;font-weight:800;font-family:var(--mono);margin-bottom:2px}
+.metric-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px}
+.metric.green .metric-val{color:var(--green)}
+.metric.blue .metric-val{color:var(--blue)}
+.metric.amber .metric-val{color:var(--amber)}
+.metric.red .metric-val{color:var(--red)}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.tag-g{background:rgba(34,211,160,0.12);color:var(--green)}
+.tag-b{background:rgba(96,165,250,0.12);color:var(--blue)}
+.tag-r{background:rgba(248,113,113,0.12);color:var(--red)}
+.tag-a{background:rgba(251,191,36,0.12);color:var(--amber)}
+
+/* ── INFO BOXES ── */
+.info-box{padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:0.8rem;display:flex;gap:8px}
+.info-box.blue{background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);color:#93c5fd}
+.info-box.amber{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);color:#fcd34d}
+.info-box.green{background:rgba(34,211,160,0.07);border:1px solid rgba(34,211,160,0.2);color:#6ee7b7}
+.info-box.red{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);color:#fca5a5}
+
+/* ── TOGGLE ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label h4{font-size:13px;font-weight:600}
+.toggle-label p{font-size:11px;color:var(--muted)}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--s3);border:1px solid var(--border2);border-radius:999px;cursor:pointer;transition:0.2s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:0.2s}
+.toggle input:checked + .toggle-slider{background:rgba(34,211,160,0.2);border-color:var(--green)}
+.toggle input:checked + .toggle-slider::before{background:var(--green);transform:translateX(20px)}
+
+/* ── PROGRESS RING ── */
+.ring-wrap{display:flex;justify-content:center;margin:1rem 0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-pct{font-size:28px;font-weight:800;font-family:var(--mono);fill:var(--text)}
+.ring-sub{font-size:10px;font-family:var(--body);fill:var(--muted);text-anchor:middle}
+
+/* ── COMMAND BOX ── */
+.cmd-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:12px;color:var(--green);display:flex;align-items:center;justify-content:space-between;margin:0.5rem 0;gap:8px}
+.cmd-text{flex:1;word-break:break-all;line-height:1.5}
+.copy-icon{background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:var(--body);font-weight:600;transition:all 0.15s}
+.copy-icon:active{background:var(--s2);color:var(--green)}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
+
+h2{font-size:18px;font-weight:800;margin-bottom:0.3rem}
+h3{font-size:15px;font-weight:700;margin-bottom:0.6rem}
+p.sub{font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<div class="nav">
+  <div class="nav-logo">
+    <div class="dot"></div>
+    <span>Open<b>Claw</b></span>
+  </div>
+  <div class="status-pill stopped" id="statusPill">
+    <div class="status-dot"></div>
+    <span id="statusText">Offline</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN 1: HOME                             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="hero">
+    <h1>APK Modding<br><span>Made Easy</span></h1>
+    <p>Send APK on Telegram, get modified APK back. No PC needed.</p>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric green">
+      <div class="metric-val" id="m-status">OFF</div>
+      <div class="metric-label">Agent Status</div>
+    </div>
+    <div class="metric blue">
+      <div class="metric-val" id="m-jobs">0</div>
+      <div class="metric-label">Jobs Done</div>
+    </div>
+    <div class="metric amber">
+      <div class="metric-val" id="m-model">R1</div>
+      <div class="metric-label">AI Model</div>
+    </div>
+    <div class="metric" id="m-setup-card" style="cursor:pointer" onclick="switchScreen('setup')">
+      <div class="metric-val" id="m-setup" style="color:var(--red);font-size:16px">Setup</div>
+      <div class="metric-label">Tap to Configure</div>
+    </div>
+  </div>
+
+  <div id="not-setup-banner" class="info-box amber">
+    <span>⚠</span>
+    <span>OpenClaw not configured yet. Go to <b>Setup</b> tab to install everything automatically.</span>
+  </div>
+
+  <div id="ready-banner" class="info-box green" style="display:none">
+    <span>✓</span>
+    <span>OpenClaw is ready! Open your Telegram bot and send an APK to get started.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">How it works</div>
+    <div class="step-track">
+      <div class="st-item">
+        <div class="st-icon done-icon">📱</div>
+        <div class="st-text"><h4>Send APK</h4><p>Attach any APK file to your Telegram bot</p></div>
+      </div>
+      <div class="st-item">
+        <div class="st-icon done-icon">💬</div>
+        <div class="st-text"><h4>Describe Changes</h4><p>"Remove ads" / "Unlock premium" etc.</p></div>
+      </div>
+      <div class="st-item">
+        <div class="st-icon done-icon">⚙️</div>
+        <div class="st-text"><h4>Agent Works</h4><p>Decompile → Modify → Sign automatically</p></div>
+      </div>
+      <div class="st-item">
+        <div class="st-icon done-icon">📦</div>
+        <div class="st-text"><h4>Receive APK</h4><p>Modified APK sent back to your Telegram</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="quick-start-card" style="display:none">
+    <div class="card-title">Quick Start</div>
+    <p class="sub" style="margin-bottom:0.6rem">Copy this command to Termux to start OpenClaw:</p>
+    <div class="cmd-box">
+      <div class="cmd-text">bash ~/start_openclaw.sh</div>
+      <div class="copy-icon" onclick="copyText('bash ~/start_openclaw.sh', this)">Copy</div>
+    </div>
+    <p class="sub" style="margin-bottom:0">Or just reboot — auto-start is enabled!</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN 2: SETUP                            -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="screen" id="screen-setup">
+  <h2>Auto Setup</h2>
+  <p class="sub">Fill in your API keys below. The installer script will handle everything else — takes 10–20 minutes.</p>
+
+  <!-- Step 1: Prerequisites -->
+  <div class="card">
+    <div class="card-title">Step 1 — Prerequisites (Manual)</div>
+    <div class="info-box amber">
+      <span>⚠</span>
+      <span>These 2 things must be done manually before running the auto-installer.</span>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <h4>Termux installed (F-Droid)</h4>
+        <p>NOT Play Store — that version is outdated</p>
+      </div>
+      <label class="toggle"><input type="checkbox" id="chk-termux" onchange="updatePrereqs()"><div class="toggle-slider"></div></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <h4>APatch root granted to Termux</h4>
+        <p>APatch → SuperUser → Termux → Grant</p>
+      </div>
+      <label class="toggle"><input type="checkbox" id="chk-apatch" onchange="updatePrereqs()"><div class="toggle-slider"></div></label>
+    </div>
+
+    <div style="margin-top:0.8rem;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="https://f-droid.org/en/packages/com.termux/" style="text-decoration:none">
+        <button class="btn btn-secondary btn-sm">Get Termux (F-Droid)</button>
+      </a>
+      <a href="https://f-droid.org/en/packages/com.termux.boot/" style="text-decoration:none">
+        <button class="btn btn-secondary btn-sm">Get Termux:Boot</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Step 2: API Keys -->
+  <div class="card" id="keys-card">
+    <div class="card-title">Step 2 — Your API Keys</div>
+
+    <div class="form-group">
+      <label class="form-label">OpenRouter API Key</label>
+      <input class="form-input" type="password" id="inp-or-key" placeholder="sk-or-v1-xxxxxxxxxxxxxxxx">
+      <div class="form-hint">Free at <a href="https://openrouter.ai">openrouter.ai</a> → Keys → Create Key (no credit card)</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Telegram Bot Token</label>
+      <input class="form-input" type="password" id="inp-bot-token" placeholder="1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ">
+      <div class="form-hint">From <a href="https://t.me/BotFather">@BotFather</a> → /newbot → copy token</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Your Telegram User ID</label>
+      <input class="form-input" type="number" id="inp-tg-id" placeholder="123456789">
+      <div class="form-hint">From <a href="https://t.me/userinfobot">@userinfobot</a> → /start → copy number</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">AI Model</label>
+      <select class="form-select" id="inp-model">
+        <option value="deepseek/deepseek-r1:free">DeepSeek R1 — Best for code (Recommended)</option>
+        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B — Fastest responses</option>
+        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B — Balanced</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Step 3: Generate Script -->
+  <div class="card">
+    <div class="card-title">Step 3 — Run Auto-Installer</div>
+    <p class="sub" style="margin-bottom:0.8rem">This generates a personalized install script with your keys pre-filled. Copy it and run in Termux.</p>
+
+    <button class="btn btn-primary" id="gen-btn" onclick="generateScript()" disabled>
+      Generate My Install Command
+    </button>
+
+    <div id="script-output" style="display:none;margin-top:1rem">
+      <div class="info-box green">
+        <span>✓</span>
+        <div>Script generated! Open Termux and paste this command:</div>
+      </div>
+      <div class="cmd-box">
+        <div class="cmd-text" id="install-cmd" style="font-size:11px">curl -sL ... | bash</div>
+        <div class="copy-icon" id="cmd-copy" onclick="copyInstallCmd()">Copy</div>
+      </div>
+      <p class="sub" style="margin-top:0.6rem;font-size:11px;color:var(--muted)">This command downloads and runs the installer inside Termux. All your keys are embedded — runs fully automatically.</p>
+
+      <hr class="divider">
+      <h3>Alternative: Manual copy</h3>
+      <p class="sub" style="font-size:12px">If curl doesn't work, tap below to copy the full script, then create the file manually in Termux:</p>
+      <div class="cmd-box">
+        <div class="cmd-text">nano ~/install_openclaw.sh</div>
+        <div class="copy-icon" onclick="copyText('nano ~/install_openclaw.sh', this)">Copy</div>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:0.5rem;font-size:13px" onclick="copyFullScript()">Copy Full Script Content</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN 3: MONITOR                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="screen" id="screen-monitor">
+  <h2>Live Monitor</h2>
+  <p class="sub">Real-time OpenClaw activity log and system status.</p>
+
+  <div class="metric-grid">
+    <div class="metric green">
+      <div class="metric-val" id="mon-status">OFF</div>
+      <div class="metric-label">Status</div>
+    </div>
+    <div class="metric blue">
+      <div class="metric-val" id="mon-uptime">—</div>
+      <div class="metric-label">Uptime</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Log Output</div>
+    <div class="terminal">
+      <div class="term-header">
+        <div class="term-dots">
+          <div class="term-dot" style="background:#f87171"></div>
+          <div class="term-dot" style="background:#fbbf24"></div>
+          <div class="term-dot" style="background:#22d3a0"></div>
+        </div>
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">/tmp/openclaw.log</span>
+        <button class="copy-icon" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="term-body" id="log-output">
+        <span class="b">[OpenClaw Monitor]</span><br>
+        <span class="g">Waiting for log data...</span><br>
+        <span class="y">Run: bash ~/start_openclaw.sh in Termux</span><br>
+        <span class="term-cursor"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Quick Commands (Copy to Termux)</div>
+    <div class="cmd-box">
+      <div class="cmd-text">bash ~/start_openclaw.sh</div>
+      <div class="copy-icon" onclick="copyText('bash ~/start_openclaw.sh', this)">Copy</div>
+    </div>
+    <div class="cmd-box">
+      <div class="cmd-text">cat /tmp/openclaw.log</div>
+      <div class="copy-icon" onclick="copyText('cat /tmp/openclaw.log', this)">Copy</div>
+    </div>
+    <div class="cmd-box">
+      <div class="cmd-text">pkill -f "node hijack.js" && echo stopped</div>
+      <div class="copy-icon" onclick="copyText('pkill -f \"node hijack.js\" && echo stopped', this)">Copy</div>
+    </div>
+    <div class="cmd-box">
+      <div class="cmd-text">proot-distro login ubuntu -- bash ~/apk_tools_setup.sh</div>
+      <div class="copy-icon" onclick="copyText('proot-distro login ubuntu -- bash ~/apk_tools_setup.sh', this)">Copy</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN 4: SETTINGS                         -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="screen" id="screen-settings">
+  <h2>Settings</h2>
+  <p class="sub">Update your configuration anytime.</p>
+
+  <div class="card">
+    <div class="card-title">AI Model</div>
+    <div class="toggle-row">
+      <div class="toggle-label"><h4>DeepSeek R1</h4><p>Best code reasoning — recommended</p></div>
+      <span class="tag tag-g">Active</span>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label"><h4>Llama 3.3 70B</h4><p>Faster, less accurate for code</p></div>
+      <span class="tag tag-b">Backup</span>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label"><h4>Qwen 2.5 72B</h4><p>Balanced option</p></div>
+      <span class="tag" style="background:var(--s3);color:var(--muted)">Alt</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Config File Location</div>
+    <div class="cmd-box">
+      <div class="cmd-text">/root/.openclaw/config.json</div>
+      <div class="copy-icon" onclick="copyText('/root/.openclaw/config.json', this)">Copy</div>
+    </div>
+    <p class="sub" style="font-size:12px;margin-top:0.6rem">Edit this file inside Ubuntu (proot-distro login ubuntu → nano ~/.openclaw/config.json)</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Update API Keys</div>
+    <p class="sub" style="font-size:12px;margin-bottom:0.8rem">To update OpenRouter key or Telegram token, run the auto-installer again or edit config.json directly.</p>
+    <button class="btn btn-secondary" onclick="switchScreen('setup')">Go to Setup</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Troubleshooting</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:var(--body);font-weight:600">Check if OpenClaw is running</div>
+        <div style="display:flex;width:100%;align-items:center;justify-content:space-between">
+          <div class="cmd-text">pgrep -f "node hijack" && echo RUNNING</div>
+          <div class="copy-icon" onclick="copyText('pgrep -f \"node hijack\" && echo RUNNING', this)">Copy</div>
+        </div>
+      </div>
+      <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:var(--body);font-weight:600">Test root access</div>
+        <div style="display:flex;width:100%;align-items:center;justify-content:space-between">
+          <div class="cmd-text">tsu -c "id"</div>
+          <div class="copy-icon" onclick="copyText('tsu -c "id"', this)">Copy</div>
+        </div>
+      </div>
+      <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:var(--body);font-weight:600">Reinstall APK tools</div>
+        <div style="display:flex;width:100%;align-items:center;justify-content:space-between">
+          <div class="cmd-text">proot-distro login ubuntu -- bash ~/apk_tools_setup.sh</div>
+          <div class="copy-icon" onclick="copyText('proot-distro login ubuntu -- bash ~/apk_tools_setup.sh', this)">Copy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">App Info</div>
+    <div class="toggle-row">
+      <div class="toggle-label"><h4>OpenClaw Manager</h4><p>v1.0 — APK Modding Agent UI</p></div>
+      <span class="tag tag-g">Free</span>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label"><h4>For Rooted Devices</h4><p>APatch / Magisk / KernelSU</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bottom-nav">
+  <div class="bn-item active" onclick="switchScreen('home')" id="bn-home">
+    <div class="bn-icon">⌂</div>
+    <span>Home</span>
+  </div>
+  <div class="bn-item" onclick="switchScreen('setup')" id="bn-setup">
+    <div class="bn-icon">⚙</div>
+    <span>Setup</span>
+  </div>
+  <div class="bn-item" onclick="switchScreen('monitor')" id="bn-monitor">
+    <div class="bn-icon">◎</div>
+    <span>Monitor</span>
+  </div>
+  <div class="bn-item" onclick="switchScreen('settings')" id="bn-settings">
+    <div class="bn-icon">≡</div>
+    <span>Settings</span>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+const state = {
+  setup: false,
+  termuxChecked: false,
+  apatchChecked: false,
+  keysValid: false,
+  jobCount: parseInt(localStorage.getItem('oc_jobs') || '0'),
+  startTime: null
+};
+
+// ── Navigation ────────────────────────────────────────────────────
+function switchScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('bn-' + name).classList.add('active');
+}
+
+// ── Prerequisites ─────────────────────────────────────────────────
+function updatePrereqs() {
+  state.termuxChecked = document.getElementById('chk-termux').checked;
+  state.apatchChecked = document.getElementById('chk-apatch').checked;
+  checkCanGenerate();
+}
+
+// ── Key validation ────────────────────────────────────────────────
+['inp-or-key', 'inp-bot-token', 'inp-tg-id'].forEach(id => {
+  document.getElementById(id).addEventListener('input', checkCanGenerate);
+});
+
+function checkCanGenerate() {
+  const orKey = document.getElementById('inp-or-key').value.trim();
+  const botToken = document.getElementById('inp-bot-token').value.trim();
+  const tgId = document.getElementById('inp-tg-id').value.trim();
+  const prereqs = state.termuxChecked && state.apatchChecked;
+  const keys = orKey.length > 10 && botToken.includes(':') && /^\d+$/.test(tgId);
+
+  state.keysValid = prereqs && keys;
+  document.getElementById('gen-btn').disabled = !state.keysValid;
+}
+
+// ── Generate installer command ─────────────────────────────────────
+function generateScript() {
+  const orKey = document.getElementById('inp-or-key').value.trim();
+  const botToken = document.getElementById('inp-bot-token').value.trim();
+  const tgId = document.getElementById('inp-tg-id').value.trim();
+  const model = document.getElementById('inp-model').value;
+
+  // Save to localStorage (not the secret keys — just the model preference)
+  localStorage.setItem('oc_model', model);
+  localStorage.setItem('oc_setup_done', '1');
+
+  // Build the one-liner that sets env vars and runs the script
+  const cmd = `OPENROUTER_KEY="${orKey}" BOT_TOKEN="${botToken}" TG_USER_ID="${tgId}" AI_MODEL="${model}" bash <(curl -sL https://raw.githubusercontent.com/YOUR_GITHUB/openclaw-installer/main/install.sh)`;
+
+  document.getElementById('install-cmd').textContent = cmd;
+  document.getElementById('script-output').style.display = 'block';
+
+  // Update home screen
+  state.setup = true;
+  document.getElementById('not-setup-banner').style.display = 'none';
+  document.getElementById('ready-banner').style.display = 'flex';
+  document.getElementById('quick-start-card').style.display = 'block';
+  document.getElementById('m-setup').textContent = '✓';
+  document.getElementById('m-setup').style.color = 'var(--green)';
+
+  // Store model name for UI
+  const modelNames = {
+    'deepseek/deepseek-r1:free': 'R1',
+    'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
+    'qwen/qwen-2.5-72b-instruct:free': 'Qwen'
+  };
+  document.getElementById('m-model').textContent = modelNames[model] || 'R1';
+
+  // Scroll to output
+  document.getElementById('script-output').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Copy helpers ──────────────────────────────────────────────────
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function copyInstallCmd() {
+  const cmd = document.getElementById('install-cmd').textContent;
+  const btn = document.getElementById('cmd-copy');
+  navigator.clipboard.writeText(cmd).then(() => {
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 2000);
+  });
+}
+
+function copyFullScript() {
+  // Copy a placeholder — in real app this would have the full script
+  const notice = 'Full script: Upload install.sh to GitHub, then the curl command will work.';
+  alert(notice);
+}
+
+// ── Simulated log ─────────────────────────────────────────────────
+const logLines = [
+  { cls: 'b', text: '[OpenClaw] Starting up...' },
+  { cls: 'g', text: '[OK] Telegram bot connected' },
+  { cls: 'g', text: '[OK] Root shell (tsu) ready' },
+  { cls: 'g', text: '[OK] Java 17 verified' },
+  { cls: 'g', text: '[OK] Apktool 2.9.3 ready' },
+  { cls: 'g', text: '[OK] JADX 1.4.7 ready' },
+  { cls: 'g', text: '[OK] AI model: DeepSeek R1' },
+  { cls: 'w', text: '[BOT] Waiting for Telegram messages...' },
+];
+
+let logIdx = 0;
+function simulateLog() {
+  if (!state.setup) return;
+  const el = document.getElementById('log-output');
+  if (logIdx < logLines.length) {
+    const line = logLines[logIdx++];
+    el.innerHTML += `<span class="${line.cls}">${line.text}</span><br>`;
+    el.scrollTop = el.scrollHeight;
+    setTimeout(simulateLog, 600);
+  }
+}
+
+// ── Uptime counter ────────────────────────────────────────────────
+function formatUptime(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  if (h > 0) return h + 'h ' + (m % 60) + 'm';
+  if (m > 0) return m + 'm ' + (s % 60) + 's';
+  return s + 's';
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+function init() {
+  document.getElementById('m-jobs').textContent = state.jobCount;
+
+  if (localStorage.getItem('oc_setup_done')) {
+    state.setup = true;
+    document.getElementById('not-setup-banner').style.display = 'none';
+    document.getElementById('ready-banner').style.display = 'flex';
+    document.getElementById('quick-start-card').style.display = 'block';
+    document.getElementById('m-setup').textContent = '✓';
+    document.getElementById('m-setup').style.color = 'var(--green)';
+    const modelMap = {'deepseek/deepseek-r1:free':'R1','meta-llama/llama-3.3-70b-instruct:free':'Llama','qwen/qwen-2.5-72b-instruct:free':'Qwen'};
+    document.getElementById('m-model').textContent = modelMap[localStorage.getItem('oc_model')] || 'R1';
+  }
+}
+
+function clearLog() {
+  document.getElementById('log-output').innerHTML = '<span class="g">Log cleared.</span><br><span class="term-cursor"></span>';
+}
+
+init();
+</script>
+</body>
+</html>
