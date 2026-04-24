@@ -1,2 +1,2 @@
 # OpenClaw Installer
-[Open App](https://github.com/workingman7)/openclaw-installer/openclaw_app_ui.html)
+[Open App](openclaw_app_ui.html)/openclaw-installer/openclaw_app_ui.html)
